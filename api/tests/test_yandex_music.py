@@ -3,6 +3,7 @@ import unittest
 from . import _support  # noqa: F401
 from onthespot.api.yandex_music import yandex_music_get_file_url
 from onthespot.parse_item import UrlMatcher
+from onthespot.utils import sanitize_data
 
 
 class _Variant:
@@ -29,6 +30,7 @@ class _Client:
 
 class YandexMusicTest(unittest.TestCase):
     def test_urls_and_download_quality(self):
+        self.assertEqual(sanitize_data(2026), "2026")
         matcher = UrlMatcher()
         self.assertEqual(
             matcher.match("https://music.yandex.ru/album/1193829/track/10994777"),

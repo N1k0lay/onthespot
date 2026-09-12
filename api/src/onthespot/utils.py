@@ -502,6 +502,7 @@ def sanitize_data(value):
     """
     if value is None:
         return ""
+    value = str(value)
     char = config.get("illegal_character_replacement")
     if os.name == "nt":
         illegal_chars = ["\\", "/", ":", "*", "?", '"', "<", ">", "|"]
