@@ -206,6 +206,10 @@ def add_yandex_music_account():
         daemon=True,
     )
     login_worker.start()
+    return {
+        "verification_url": code.verification_url,
+        "user_code": code.user_code,
+    }
 
 
 def add_yandex_music_account_worker(client, code):
@@ -1747,9 +1751,10 @@ async def add_account(service: str, item: AccountData | None = None):
 
     :param service: The name of the service (e.g., "spotify", "tidal").
     :param item: Optional data required for adding the account.
-    :return: Boolean indicating success or failure of account addition.
+    :return: Result and any prompt needed to complete device authorization.
     """
     found = False
+    auth_prompt = None
     match service:
         case "generic":
             generic_add_account()
@@ -1767,7 +1772,7 @@ async def add_account(service: str, item: AccountData | None = None):
             youtube_music_add_account()
             found = True
         case "yandex_music":
-            add_yandex_music_account()
+            auth_prompt = add_yandex_music_account()
             found = True
         case "bandcamp":
             bandcamp_add_account()
@@ -1786,10 +1791,10 @@ async def add_account(service: str, item: AccountData | None = None):
             # found = True
         case _:
             raise NotImplementedError
-    if found:
+    if found and auth_prompt is None:
         await run_in_threadpool(relogin)
     notification_hook(title="Logging in...")
-    return found
+    return {"success": found, **(auth_prompt or {})}
 
 
 @app.post("/accounts/spotify/companion/pair")

@@ -3,11 +3,11 @@ import { createPortal } from 'react-dom';
 import { Users, Plus, Trash2, Loader2, Server, RefreshCw, CircleCheck, AlertTriangle, Music2, Waves, Cloud, Disc3, CirclePlay, Heart, Headphones, Film, Download, Globe2, Wifi } from 'lucide-react';
 import { AccountItem } from '../types';
 import { createSpotifyCompanionPairing, fetchYouTubeAuthenticationStatus, getTargetBackendUrl } from '../lib/api';
-import type { AccountHealth, YouTubeAuthenticationStatus } from '../lib/api';
+import type { AccountAddResult, AccountHealth, YouTubeAuthenticationStatus } from '../lib/api';
 
 interface AccountsManagerProps {
   accounts: AccountItem[];
-  onAddAccount: (service: string, credentials: { username?: string; token?: string }) => Promise<AccountItem | null>;
+  onAddAccount: (service: string, credentials: { username?: string; token?: string }) => Promise<AccountAddResult | null>;
   onRemoveAccount: (uuid: string) => Promise<boolean>;
   onRefreshAccounts: () => Promise<AccountItem[]>;
   health: AccountHealth | null;
@@ -84,6 +84,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
   const [reconnecting, setReconnecting] = useState(false);
   const [formError, setFormError] = useState('');
   const [signInStarted, setSignInStarted] = useState('');
+  const [devicePrompt, setDevicePrompt] = useState<{ url: string; code: string } | null>(null);
   const [youtubeAuthMode, setYoutubeAuthMode] = useState<YouTubeSetupMode>('upload');
   const [youtubeBrowser, setYoutubeBrowser] = useState('edge');
   const [youtubeCookieFile, setYoutubeCookieFile] = useState('');
@@ -185,6 +186,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
     e.preventDefault();
     setFormError('');
     setSignInStarted('');
+    setDevicePrompt(null);
     if (selectedService.value === 'spotify' && spotifyAccessMode === 'remote') {
       await createCompanionPairing();
       return;
@@ -238,6 +240,11 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
     setLoading(false);
     if (res) {
       if (selectedService.mode === 'device') {
+        if (res.verification_url && res.user_code) {
+          setDevicePrompt({ url: res.verification_url, code: res.user_code });
+          setSignInStarted('Open Yandex Music authorization and enter the code shown below.');
+          return;
+        }
         setSignInStarted(selectedService.value === 'spotify'
           ? 'Spotify Connect is waiting. In the Spotify app, open Connect to a device and select OnTheSpot, then refresh Accounts.'
           : `${selectedService.label} sign-in started. Open the authorization link in Notifications, enter the code, then refresh Accounts.`);
@@ -268,7 +275,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
         </div>
 
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => { setDevicePrompt(null); setSignInStarted(''); setShowModal(true); }}
           className="ots-button ots-button-primary h-11 shrink-0 px-5 text-sm"
         >
           <Plus className="w-4 h-4" />
@@ -392,7 +399,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                 <label className="text-xs font-medium text-gray-700 dark:text-neutral-300 mb-1.5 block">Platform Service</label>
                 <select
                   value={service}
-                  onChange={(e) => { setService(e.target.value); setFormError(''); setSignInStarted(''); setUsername(''); setToken(''); setYoutubeCookieFile(''); setCompanionPairing(null); setCompanionWaiting(false); setSpotifyAccessMode('local'); }}
+                  onChange={(e) => { setService(e.target.value); setFormError(''); setSignInStarted(''); setDevicePrompt(null); setUsername(''); setToken(''); setYoutubeCookieFile(''); setCompanionPairing(null); setCompanionWaiting(false); setSpotifyAccessMode('local'); }}
                   className="ots-select w-full"
                 >
                   {SERVICE_OPTIONS.map((option) => (
@@ -547,6 +554,12 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                 </div>
               )}
               {formError && <p className="text-sm font-medium text-red-400">{formError}</p>}
+              {devicePrompt && (
+                <div className="rounded-lg border border-[#f6b94a]/50 bg-[#3b321d] px-4 py-3 text-sm text-[#f6b94a]">
+                  <a href={devicePrompt.url} target="_blank" rel="noreferrer" className="font-semibold text-white underline underline-offset-2">Open Yandex Music authorization</a>
+                  <p className="mt-2">Code: <code className="select-all rounded bg-black/30 px-2 py-1 font-mono text-base font-bold text-white">{devicePrompt.code}</code></p>
+                </div>
+              )}
               {signInStarted && <p
                 className="rounded-lg border px-4 py-3 text-sm"
                 style={{
@@ -561,7 +574,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
               <div className="flex shrink-0 items-center justify-end gap-2 border-t border-[#353535] bg-[#1c1c1c] px-6 py-4 sm:px-8">
                 <button
                   type="button"
-                  onClick={() => { setCompanionWaiting(false); setCompanionPairing(null); setShowModal(false); }}
+                  onClick={() => { setCompanionWaiting(false); setCompanionPairing(null); setDevicePrompt(null); setShowModal(false); }}
                   className="ots-button ots-button-ghost"
                 >
                   Cancel

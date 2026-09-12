@@ -1054,10 +1054,16 @@ export async function importSettings(
   }
 }
 
+export interface AccountAddResult {
+  success: boolean;
+  verification_url?: string;
+  user_code?: string;
+}
+
 export async function addAccountService(
   service: string,
   credentials: { username?: string; token?: string },
-): Promise<AccountItem | null> {
+): Promise<AccountAddResult | null> {
   try {
     const res = await request(
       `/accounts/add?service=${encodeURIComponent(service)}`,
@@ -1067,8 +1073,8 @@ export async function addAccountService(
       },
     );
     if (!res.ok) throw new Error("Add account request failed");
-    const data = await res.json();
-    return data.account || (credentials as AccountItem);
+    const data = await res.json() as AccountAddResult;
+    return data.success ? data : null;
   } catch (err) {
     console.error("Add account failed:", err);
     return null;
