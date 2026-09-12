@@ -95,6 +95,7 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
   const [companionPairing, setCompanionPairing] = useState<{ pairing_token: string; expires_at: number; expires_in: number; device_name: string } | null>(null);
   const [companionWaiting, setCompanionWaiting] = useState(false);
   const initialSpotifyCount = useRef(0);
+  const initialYandexCount = useRef(0);
   const sortedAccounts = [...accounts].sort((left, right) =>
     getServicePresentation(left.service).label.localeCompare(getServicePresentation(right.service).label),
   );
@@ -182,6 +183,20 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
     }
   };
 
+  const checkYandexAuthorization = async () => {
+    setLoading(true);
+    const freshAccounts = await onRefreshAccounts();
+    setLoading(false);
+    const yandexCount = freshAccounts.filter((account) => account.service.toLowerCase() === 'yandex_music').length;
+    if (yandexCount > initialYandexCount.current) {
+      setDevicePrompt(null);
+      setSignInStarted('Yandex Music connected.');
+      setShowModal(false);
+      return;
+    }
+    setSignInStarted('Authorization is still pending. Confirm the code in Yandex, then check again.');
+  };
+
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError('');
@@ -236,6 +251,9 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
       }
     }
     setLoading(true);
+    if (selectedService.value === 'yandex_music') {
+      initialYandexCount.current = accounts.filter((account) => account.service.toLowerCase() === 'yandex_music').length;
+    }
     const res = await onAddAccount(service, { username, token });
     setLoading(false);
     if (res) {
@@ -558,6 +576,9 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
                 <div className="rounded-lg border border-[#f6b94a]/50 bg-[#3b321d] px-4 py-3 text-sm text-[#f6b94a]">
                   <a href={devicePrompt.url} target="_blank" rel="noreferrer" className="font-semibold text-white underline underline-offset-2">Open Yandex Music authorization</a>
                   <p className="mt-2">Code: <code className="select-all rounded bg-black/30 px-2 py-1 font-mono text-base font-bold text-white">{devicePrompt.code}</code></p>
+                  <button type="button" onClick={() => void checkYandexAuthorization()} disabled={loading} className="ots-button ots-button-secondary mt-3 h-8 px-3 text-xs">
+                    {loading ? 'Checking…' : 'Check authorization'}
+                  </button>
                 </div>
               )}
               {signInStarted && <p
