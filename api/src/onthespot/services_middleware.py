@@ -330,7 +330,7 @@ def download_via_ytdlp_audio(
         # item_url = item_metadata["item_url"]
         default_format = ".m4a"
         bitrate = "128k"
-        ydl_opts["format"] = "bestaudio[ext=m4a]"
+        ydl_opts["format"] = "bestaudio[ext=m4a]/bestaudio"
         # needed for download
         ydl_opts["extractor_args"] = {
             "youtube": {
