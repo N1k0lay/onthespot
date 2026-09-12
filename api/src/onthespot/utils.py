@@ -608,7 +608,7 @@ def format_item_path(item, item_metadata):
         composer=safe_composer,
         album=sanitize_data(album),
         album_artist=sanitize_data(item_metadata.get("album_artists")),
-        album_type=item_metadata.get("album_type", "single").title(),
+        album_type=(item_metadata.get("album_type") or "single").title(),
         disc_number=item_metadata.get("disc_number", 1)
         if not config.get("use_double_digit_path_numbers")
         else str(item_metadata.get("disc_number", 1)).zfill(2),
@@ -1256,7 +1256,7 @@ def add_to_m3u_file(item, item_metadata):
             composer=item_metadata.get("composer"),
             album=item_metadata.get("album_name"),
             album_artist=item_metadata.get("album_artists"),
-            album_type=item_metadata.get("album_type", "single").title(),
+            album_type=(item_metadata.get("album_type") or "single").title(),
             name=item_metadata.get("title"),
             year=item_metadata.get("release_year"),
             disc_number=item_metadata.get("disc_number", 1)
