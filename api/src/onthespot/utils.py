@@ -684,7 +684,7 @@ def convert_audio_format(filename, bitrate: int, default_format, force_bitrate=F
         # Check if media format is service default
 
         if filetype == default_format and force_bitrate:
-            command += ["-b:a", bitrate]
+            command += ["-b:a", f"{bitrate}k"]
         elif filetype == default_format:
             command += ["-c:a", "copy"]
         else:

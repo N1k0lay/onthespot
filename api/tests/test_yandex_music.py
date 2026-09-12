@@ -1,9 +1,12 @@
 import unittest
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from . import _support  # noqa: F401
 from onthespot.api.yandex_music import yandex_music_get_file_url
 from onthespot.parse_item import UrlMatcher
-from onthespot.utils import sanitize_data
+from onthespot.utils import convert_audio_format, sanitize_data
 
 
 class _Variant:
@@ -29,6 +32,21 @@ class _Client:
 
 
 class YandexMusicTest(unittest.TestCase):
+    def test_numeric_bitrate_is_valid_for_ffmpeg(self):
+        with TemporaryDirectory() as directory:
+            filename = Path(directory) / "track.mp3"
+            filename.write_bytes(b"audio")
+            with patch(
+                "onthespot.utils.config.get",
+                side_effect=lambda key: "/usr/bin/ffmpeg"
+                if key == "_ffmpeg_bin_path"
+                else [],
+            ), patch("onthespot.utils.subprocess.check_call") as check_call:
+                convert_audio_format(str(filename), 320, ".mp3", True)
+
+        command = check_call.call_args.args[0]
+        self.assertEqual(command[command.index("-b:a") + 1], "320k")
+
     def test_urls_and_download_quality(self):
         self.assertEqual(sanitize_data(2026), "2026")
         matcher = UrlMatcher()
