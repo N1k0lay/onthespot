@@ -48,6 +48,16 @@ class YandexMusicTest(unittest.TestCase):
                 "uuid:0ff770f5-26fd-cf87-9a31-9e8723eda07f",
             ),
         )
+        self.assertEqual(
+            matcher.match(
+                "https://music.yandex.ru/playlists/lk.10ed670a-5496-4b27-9504-2481dfe3c79c"
+            ),
+            (
+                "yandex_music",
+                "playlist",
+                "uuid:lk.10ed670a-5496-4b27-9504-2481dfe3c79c",
+            ),
+        )
 
         url, codec, bitrate = yandex_music_get_file_url(_Client(), "1", 200)
         self.assertEqual(url, "https://audio.example/192.mp3")

@@ -47,7 +47,7 @@ YANDEX_MUSIC_URL_REGEX = re.compile(
     r"|track/(?P<standalone_track_id>\d+)"
     r"|artist/(?P<artist_id>\d+)"
     r"|users/(?P<playlist_owner>[^/]+)/playlists/(?P<playlist_id>\d+)"
-    r"|playlists/(?P<playlist_uuid>[0-9a-f-]+))"
+    r"|playlists/(?P<playlist_uuid>(?:lk\.)?[0-9a-f-]+))"
     r"(?:[/?#].*)?$",
     re.IGNORECASE,
 )
