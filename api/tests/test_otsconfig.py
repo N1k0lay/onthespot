@@ -10,6 +10,25 @@ from onthespot.otsconfig import Config, cache_dir, config_dir  # noqa: E402
 
 
 class ConfigPathTests(unittest.TestCase):
+    def test_docker_download_defaults_follow_local_home(self):
+        home = TEST_ROOT / "local-home"
+        with patch.dict(
+            os.environ,
+            {
+                "HOME": str(home),
+                "USERPROFILE": str(home),
+                "ONTHESPOTDIR": str(TEST_ROOT / "local-config"),
+            },
+        ):
+            instance = Config()
+
+        self.assertEqual(
+            instance.get("audio_download_path"), str(home / "Music/OnTheSpot")
+        )
+        self.assertEqual(
+            instance.get("video_download_path"), str(home / "Videos/OnTheSpot")
+        )
+
     def test_nonexistent_config_override_is_honoured(self):
         override = TEST_ROOT / "new-config-root"
         self.assertFalse(override.exists())

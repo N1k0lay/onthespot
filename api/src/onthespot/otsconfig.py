@@ -136,18 +136,18 @@ class Config:
         #        )
         #    )
 
-        # The bundled defaults are written for the Linux/Docker image. When
-        # running the API directly on Windows, translate those container paths
-        # to the user's normal Music/Videos folders instead of creating a
-        # literal ``C:\\root`` directory.
-        # if os.name == "nt":
-        #     for path_key in ("audio_download_path", "video_download_path"):
-        #         configured_path = self.__config.get(path_key)
-        #         normalized_path = str(configured_path or "").replace("\\", "/")
-        #         if normalized_path.startswith("/root/"):
-        #             self.__config[path_key] = os.path.join(
-        #                 os.path.expanduser("~"), normalized_path.removeprefix("/root/")
-        #             )
+        # Keep Docker's /root defaults, but use the actual home directory for
+        # local macOS, Windows, and non-root Linux runs.
+        home_dir = os.path.expanduser("~")
+        if os.path.normpath(home_dir) != "/root":
+            for path_key in ("audio_download_path", "video_download_path"):
+                configured_path = str(self.__config.get(path_key) or "").replace(
+                    "\\", "/"
+                )
+                if configured_path.startswith("/root/"):
+                    self.__config[path_key] = os.path.join(
+                        home_dir, configured_path.removeprefix("/root/")
+                    )
 
         # Make Download Dirs
         try:
@@ -156,10 +156,10 @@ class Config:
         except (FileNotFoundError, PermissionError) as e:
             print(f"Failed to create download dir: {e}, attempting fallback path.")
             self.set(
-                "audio_download_path", self.__template_data.get("audio_download_path")
+                "audio_download_path", os.path.join(home_dir, "Music", "OnTheSpot")
             )
             self.set(
-                "video_download_path", self.__template_data.get("video_download_path")
+                "video_download_path", os.path.join(home_dir, "Videos", "OnTheSpot")
             )
             os.makedirs(self.get("audio_download_path"), exist_ok=True)
             os.makedirs(self.get("video_download_path"), exist_ok=True)
