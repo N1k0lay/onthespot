@@ -182,6 +182,7 @@ def yandex_music_get_track_metadata(client, item_id):
         "album_type": album.type if album else "",
         "track_number": position.index if position else None,
         "disc_number": position.volume if position else 1,
+        "total_discs": 1,
         "total_tracks": album.track_count if album else None,
         "release_year": album.year if album else None,
         "genre": album.genre if album else None,
