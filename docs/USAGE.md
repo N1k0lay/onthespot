@@ -1,169 +1,164 @@
-# Usage Guide
+# OnTheSpot web-app usage
+
+This guide describes the FastAPI web application on the `fastapi-dev` branch.
+The API and UI are served by one OnTheSpot process and normally use the same
+address, such as `http://127.0.0.1:6767` or your Docker/Unraid URL.
+
+For installation, persistent folders, Docker, and Unraid setup, see
+[INSTALLATION.md](INSTALLATION.md).
+
+## First start
+
+1. Open OnTheSpot in a browser.
+2. Go to **Accounts** and add at least one service worker.
+3. If you use Spotify catalogue search or Playlist sorting, open
+   **Settings → API config** and save your Spotify Client ID and Client Secret.
+4. Choose an output profile in **Download queue** or create one in
+   **Settings → Download Profiles**.
+5. Search for media or paste a supported URL in **Search & discover**.
+
+The status shown in **Accounts** describes worker authentication. It is
+separate from Spotify Web API credentials and Playlist sorting authorization.
+
+## Accounts and service requirements
+
+Open **Accounts → Add Account**. The available workers are listed A–Z and the
+form changes to show the fields required by the selected service.
+
+| Service | Account setup | Notes |
+| --- | --- | --- |
+| Apple Music | Media User Token | A valid Apple Music session and subscription may be required for protected content. |
+| Bandcamp | None | Uses public Bandcamp access. |
+| ~~Crunchyroll~~ | Email and password | Used for supported video content. |
+| Deezer | ARL cookie value | A valid Deezer session is required. |
+| Generic | None | Uses the generic/yt-dlp worker for supported URLs. |
+| Qobuz?? | Email and password | A valid Qobuz account is required. |
+| SoundCloud | Optional OAuth token | Public content works without a token; add one for account-specific access. |
+| Spotify | Spotify Connect sign-in and Dev API Keys | Requires Spotify Premium and WebAPI Dev Keys. |
+| Tidal | Device-link sign-in | Follow the link shown by OnTheSpot. |
+| YouTube Music | Optional cookies | Public videos works without cookies. Sign-in or private videos require a Netscape-format `cookies.txt` file. |
+| Yandex Music | Device-link sign-in | A Yandex Music subscription is required for full-quality downloads. |
+
+Only use accounts and session data you are authorized to use. 
+
+Secrets are stored in and encrypted file inside the root folder, with the encryption key on the side, it's not ideal but better than clean secrets, a password protection will be implemented in the stable 2.0 or 2.1.
+
+### Spotify Connect account
+
+To login via connect and your desktop app you'll need to run the companion on the PC running spotify.
+
+> [!WARNING] Spotify has restriced API calls, be careful of the delay time, also some new accounts report to have basically no API call at all, so results may vary.
+
+More info can be found in the `/companion` folder.
 
 
-## 1. Logging into your accounts
-OnTheSpot supports various accounts and instructions for each are listed below, for further assistance please reach out for support on the community discord [here](https://discord.gg/GCQwRBFPk9).
+### Spotify Dev WebAPI credentials
 
-- **Apple Music**: Enter your media-user-token. It can be obtained in chrome by logging into https://music.apple.com, pressing ctrl + shift + i to open inspect element, clicking the 'Application' or 'Storage' header, opening the music.apple.com cookie, and copying the media-user-token value. Please note a premium account is required to download music.
+Spotify needs a Spotify Developer app:
 
-- **Bandcamp**: Bandcamp offers public downloads and does not require an account, simply click 'Add Bandcamp Account' and restart the app.
+1. Create an app in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+2. Copy its Client ID and Client Secret into **Settings → API config**.
+3. Save the configuration.
 
-- **Deezer**: Paste your arl into the bar provided and click add account. To get your arl log into the deezer website, press ctrl + shift + i to open inspect element, navigate to the 'Application' or 'Storage' header, and open the www.deezer.com cookie. Your arl should be listed under one of the values provided.
+These credentials identify the developer app; they do not sign in a Spotify
+worker and do not grant access to a user's private playlists by themselves.
 
-- **Qobuz**: To login to your Qobuz account simply enter your email and password, and restart the app. If you would like to login using your user_auth_token you can append the following to the accounts section of your config file.
-   ```python
-   {
-      # Random string of numbers and letters
-      "uuid": "private_qobuz_1",
-      "service": "qobuz",
-      "active": true,
-      "login": {
-            # Email is not used during token logins
-            "email": "email@example.com",
-            # Password is not used during token logins
-            "password": "n/a",
-            "app_id": APP_ID,
-            "app_secrets": [
-               APP_SECRET
-            ],
-            "user_auth_token": USER_AUTH_TOKEN
-      }
-   }
-   ```
+### YouTube cookies
 
-- **Soundcloud**: Paste your oauth-token into the bar provided and click add account. To get your oauth-token log into the soundcloud website, press ctrl + shift + i to open inspect element, navigate to the 'Application' or 'Storage' header, and open the soundcloud.com cookie. Your oauth-token should be listed under one of the values provided.
+YouTube does not provide a yt-dlp OAuth login. When a video requires sign-in:
 
-- **Spotify**: Ensure that both OnTheSpot and the Spotify Desktop App are not restricted by a firewall or vpn so that they can communicate. Click add account and then head over to devices in the Spotify app. Under devices you should see 'OnTheSpot', select it. Once complete the app will prompt you to restart.
+1. Sign in to YouTube in a browser on your own computer.
+2. Export that YouTube session as a Netscape-format `cookies.txt` file using a
+   trusted browser-cookie export method.
+3. In **Accounts**, add or reconfigure **YouTube Music** and choose
+   **Upload cookies.txt**.
+4. Upload the file. OnTheSpot copies it into its protected configuration
+   directory; the browser upload is not retained as a separate temporary file.
+5. Delete the exported local file when setup succeeds.
 
-- **Tidal**: The app will provide you a link, open the link and login in your browser.
+The **Read a browser on the OnTheSpot host** option is not intended to work for now, do not use it.
 
-- **Youtube Music**: Youtube Music offers public downloads and does not require an account, simply click 'Add Youtube Music Account' and restart the app.
+## Search & discover
 
-- **Crunchyroll**: To login to your Crunchyroll account simply enter your email and password, and restart the app.
+Use this page for ~~text searches and~~ direct links.
 
-- **Generic Downloader**: Generic Downloader uses yt-dlp to rip any available music or videos from a given webpage. A list of supported services is available in the app or [here](https://github.com/yt-dlp/yt-dlp/tree/master/yt_dlp/extractor). Even if your given website is not listed the generic downloader may be able to rip media anyway, just paste your url in the search bar. To activate generic downloader simply click 'Add Generic Downloader'.
+~~1. Select one or more media categories: Tracks, Albums, Playlists, Artists,
+   Podcasts, or Movies.
+2. Select one or more entries under **Search services**. **All services** uses
+   every currently available search worker.~~
+
+> [!WARNING] Search is disabled for now because of api limits and bot detection, use only URLs
+
+3. Enter an URL copied from a service and click **Search**.
+4. Confirm the service badge on a result, then click **Download**.
 
 
-## 2. Searching and Downloading Music
-The search bar is able to parse queries, urls, and text files.
+## Download queue
 
-If a query is provided, say 'Daft Punk' for instance, the app will provide results to the query seperated into categories: Tracks, Albums, Artists, Playlists, and depending on the music service Episodes, Podcasts, and Audiobooks.
+The queue shows the source service, media type, artwork, state, progress,
+speed, and ETA when the downloader can report them.
 
-If a url is provided the app will parse the url and immediately begin downloading.
+- Choose the active download profile from the queue header.
+- Pause or resume queue processing.
+- Retry failed entries, clear completed entries, or clear failed entries.
+- Cancel an active or waiting item.
+- Select visible entries for batch pause, resume, retry, cancel, delete,
+  priority, or profile changes.
+- Drag waiting entries to change their queue order.
+- Use **Verify files** to check completed entries against files on disk.
 
-If a file path is provided the app will parse each line in the file for urls beginning in either http:// or https:// and begin downloading the items listed.
+Playlist downloads are expanded before progress is calculated. The Playlist
+progress card shows overall completion and the current/next track; individual
+tracks can be shown or hidden.
 
+### Download profiles
 
-## 4. Configuration
+Create profiles in **Settings → Download Profiles** for combinations such as
+MP3 320 kbps, FLAC/lossless, or a custom destination. Activating a profile
+changes the defaults used by future queue entries. Existing entries keep the
+profile assigned when they were queued unless changed with a batch action.
 
-### General Settings
-| **Option** | **Description** |
-| ------ | ------ |
-| **Theme** | Choose the application theme (`light` or `dark`). |
-| **Explicit Label** | Customize how explicit content is labeled in file names and the app (default: 🅴). |
-| **Download Buttons** | Adds extra functionalities to the download queue. |
-| **Show Thumbnails In Search/Downloads**| Display thumbnails on respective page. |
-| **Thumbnail Size**|Change the size of thumbnail icons. |
-| **Max Search Results** | Limits the number of search results displayed for each media type (e.g., songs, albums). |
-| **Disable Download Popups** | Disables pop-up messages while downloading items. |
-| **Mirror Spotify Playback** | Download currently playing song on the selected Spotify account |
-| **Windows 10 Explorer Thumbnails** | Embed thumbnails in a format that respects Windows 10 explorer and media player, this is an older format of ID3 and not widely supported. |
-| **Close To Tray** | Close application to tray on exit. |
-| **Check for Updates** | Automatically check for application updates. |
-| **Illegal Character Replacement** | Replace illegal characters in the filepath with the value specified (e.g., `/`, `\`, `<`, `>`, `*`, etc.). |
-| **Rotate Active Account** | Automatically rotate between added accounts for downloading to minimize the chance of hitting rate limits. |
-| **Raw Media Download** | Downloads an unmodified file from whatever service is selected. With this enabled file conversion and the embedding of any metadata is skipped. Lyrics and cover art will still be downloaded. |
-| **Download Delay (s)** | The time,in seconds, to wait before initiating the next download. Helps prevent rate limits. |
-| **Download Chunk Size (b)** | The chunk size, in bytes, in which to download files. |
-| **Maximum Queue Workers** | Set the maximum number of queue workers. Setting a higher number will queue songs faster, only change this setting if you know what you're doing. Changes to this setting require you to restart the app take effect. |
-| **Maximum Download Workers** | Set the maximum number of download workers. Only change this setting if you know what you're doing. Changes to this setting require you to restart the app to take effect. |
-| **Enable Retry Worker** | Creates a worker that automatically retries failed downloads after a specified amount of time. Changes to this setting require you to restart the app to take effect. |
-| **Retry Delay (m)** | The time, in minutes, for the retry worker to wait before retrying failed items. |
+## Local library
 
-### Audio Download Settings
-| **Option** | **Description** |
-| ------ | ------ |
-| **Audio Download Path** | Root folder where all downloaded audio will be saved. |
-| **Track/Episode Format** | Select the file format to output your downloaded tracks or podcasts (e.g. `mp3`, `m4a`, `flac`, `ogg`, `wav`). For a complete list of supported codecs please see the following [list](https://ffmpeg.org/ffmpeg-formats.html). |
-| [**Track/Episode Path**](#media-path-format) | Customize the file naming pattern for tracks, episodes, and playlists using variables like `{artist}`, `{album}`, etc. |
-| **Use Custom Playlist Path** | Enable the use of a custom path format for playlists. |
-| [**Playlist Path**](#media-path-format) | Customize the file naming pattern for playlists using variables like `{artist}`, `{album}`, etc. |
-| **Create M3U Files for Playlists** | If enabled create an M3U file for downloaded tracks in a playlist. |
-| [**M3U Path**](#media-path-format) | Customize the download path of created M3U files using variables like `{artist}`, `{album}`, etc. |
-| [**EXTINF Seperator**](#media-path-format) | M3U EXTINF metadata / list seperator. |
-| [**EXTINF Path**](#media-path-format) | Customize the M3U EXTINF label using variables like `{artist}`, `{album}`, etc. |
-| **Save Album Cover** | Save album cover as an image with a default format of cover.png |
-| **Album Cover Format** | The image format to save album covers in (default: png) |
-| **File Bitrate** | Set the bitrate of a converted file, default value is 320k. This setting is not respected by some lossless codecs, results may vary depending on your chosen filetype. |
-| **File Hertz** | Set the hertz of a converted file, default value is 44100 |
-| **Use Custom File Bitrate** | Use the user specified 'File Bitrate' field, if disabled the app will use the maximum value allowed by your account. |
-| **Download Lyrics\*** | Enable downloading of lyrics for each track/episode. *This feature may require a premium account.* |
-| **Download Synced Lyrics Only\*** | Only download synced lyrics for tracks. *This feature may require a premium account.*|
-| **Save LRC File\*** | Save lyrics in an `.lrc` file alongside the track. *This feature may require a premium account.*|
-| **Translate File Path** | Translate file paths into the application language. |
-
-### Metadata Settings
-| **Option** | **Description** |
-| ------ | ------ |
-| **Metadata Separator** | Set the separator for metadata fields with multiple values (default: `; `). |
-| **Overwrite Existing Collection** | If a file already exists re-embed metadata in your selected format. |
-| **Embed Metadata Tags** | Select which metadata tags to embed in downloaded files (e.g., `artist`, `album`, `year`, `lyrics`, etc.). |
-
-### Video Download Settings
-| **Option** | **Description** |
-| ------ | ------ |
-| **Video Download Path** | Root folder where all downloaded video will be saved. |
-| **Movie/Episode Format** | Select the file format to output your downloaded movies or episodes (e.g. `mp4`, `mkv`). For a complete list of supported codecs please see the following [list](https://ffmpeg.org/ffmpeg-formats.html). |
-| [**Movie/Episode Path**](#media-path-format) | Customize the file naming pattern for movies and episodes using variables like `{artist}`, `{album}`, etc. |
-| **Preferred Video Resolution** | If available, videos downloaded  will use the resolution specified. |
-| **Download Subtitles** | Specify whether you would like to download subtitles if available. |
-| **Preferred Audio/Subtitle Language** | Preferred download language for the specified media format, formatted as en-US. Multiple languages can be added if seperated by a comma, (en-US, jp-JP)|
-| **Download All Available Audio/Subtitles** | Download all available audio or subtitles for a given video. |
-
-### Media Path Format
-
-- **Customize File Names**
-  - Define how downloaded media is named using variables enclosed in `{}`.
-
-- **Universal Variables**
-   | **Variable**      | **Description**                                     |
-   | ----------------- | --------------------------------------------------- |
-   | `{service}`       | The music service used to download your file.       |
-   | `{service_id}`    | The track's native id on the selected music service.|
-   | `{name}`          | Name of the track.                                  |
-   | `{year}`          | Release year of the track.                          |
-   | `{explicit}`      | Displays 'Explicit Label' if the song is marked explicit (default: 🅴). |
-
-- **Audio Variables**
-   | **Variable**      | **Description**                                     |
-   | ----------------- | --------------------------------------------------- |
-   | `{artist}`        | Name of the artist(s).                              |
-   | `{album_artist}`  | Name of the album artist(s).                        |
-   | `{album_type}`    | Name of the artist type (single, album, etc).       |
-   | `{disc_number}`   | Disc number (if applicable).                        |
-   | `{discccount}`    | Total number of discs in the album (if applicable). |
-   | `{genre}`         | Genre of the song.                                  |
-   | `{label}`         | Name of the record label.                           |
-   | `{track_number}`  | Track number on the album.                          |
-   | `{trackcount}`    | Total number of tracks in the album                 |
-   | `{isrc}`          | ISRC of the currently playing track.                |
-   | `{playlist_name}` | Name of the playlist (if part of a playlist).       |
-   | `{playlist_owner}`| Name of the playlist owner (if part of a playlist). |
-   | `{playlist_number}`| Item number in a playlist (if part of a playlist). |
-
-- **Show Variables**
-   | **Variable**      | **Description**                                     |
-   | ----------------- | --------------------------------------------------- |
-   | `{show_name}` | Name of the playlist (if part of a playlist).           |
-   | `{season_number}`| Name of the playlist owner (if part of a playlist).  |
-   | `{episode_number}`| Item number in a playlist (if part of a playlist).  |
-
-> [!TIP]
-> **Example:**
-> Setting the format to `{artist} - {name}` will result in files named like `Artist Name - Song Title.mp3`.
+Coming Soon
 
 
-## 6. Saving Your Configuration
+## Settings
 
-- **Apply Changes**
-  - After adjusting any settings, click the 'Save Settings' button to apply your changes. Some configuration changes may require restarting the app to take effect.
+Settings sections are listed A–Z by default and can be reordered with
+**Edit sections**.
+
+- **API config:** Spotify credentials, search categories, cache behaviour, and
+  playlist-automation cache lifetime.
+- **Audio Outputs:** download roots, filename/folder formatters, playlist folder
+  organization, M3U files, cover art, conversion, and lyrics.
+  playlist-backup folders.
+- **Display Settings:** theme preset, light/dark mode, custom/saved themes,
+  language, thumbnails, and display preferences.
+- **Download Profiles:** named format, quality, and destination presets.
+- **General & Workers:** worker counts, delays, retry behaviour, update checks,
+  and application options.
+- **ID3 Tagging:** embedded metadata fields and metadata behaviour.
+- **Video Media:** video output paths, formats, resolution, audio, and subtitles.
+
+> [NOTE] Click **Save Config** after changing backend settings. 
+
+Navigation and some display preferences save immediately in the browser.
+
+## Diagnostics, notifications, and logs
+
+- **Diagnostics** shows the OnTheSpot process, queue, disk, FFmpeg, worker, and
+  Spotify API/rate-limit state.
+- **Notification history** keeps user-visible success, warning, and error
+  messages for the current installation.
+- **Server logs** can be filtered by severity and cleared from the view.
+- **Updates** check if a new update is available from source.
+
+
+## Troubleshooting
+
+- A service filter only appears when a matching worker is available.
+- If Spotify Connect is missing, verify Premium access, same-LAN discovery, and
+  local firewall rules; use the companion for a remote server.
+- Use **Diagnostics**, **Notification history**, and **Server logs** for the
+  exact backend error before retrying or changing credentials.

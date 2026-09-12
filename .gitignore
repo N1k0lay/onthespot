@@ -6,16 +6,24 @@ __pycache__/
 # C extensions
 *.so
 
+#local dev folders
+otsdata/
+.kilocode
+.kilo
+
 # Distribution / packaging
 ffbin_*/
 .Python
 build/
+builder/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
 lib/
+#exclude ui lib folder!
+!/ui/src/lib
 lib64/
 parts/
 sdist/
@@ -81,6 +89,7 @@ docs/_build/
 # PyBuilder
 target/
 
+
 # Jupyter Notebook
 .ipynb_checkpoints
 
@@ -140,3 +149,17 @@ dmypy.json
 .markdownlintignore
 .markdownlint.json
 .vscode
+
+# Mac OSX
+.DS_Store
+# Local Spotify fix testing (do not commit)
+spotify_creds.txt
+debug_*.py
+run_dev.ps1
+
+node_modules/
+
+# Application lockfiles are part of the reproducible Docker build. Keep local
+# virtual environments and installed modules ignored, but commit these files.
+!api/uv.lock
+!ui/package-lock.json

@@ -1,46 +1,57 @@
-FROM python:3-slim AS base
+# Build the React application first. Its API base is deliberately relative so
+# a browser always talks to the same host that served the UI (including Unraid).
+FROM node:22-alpine AS ui-builder
+
+WORKDIR /ui
+COPY ui/package*.json ./
+RUN npm install --no-audit --no-fund
+COPY ui/ ./
+RUN npm run build
+
+# Resolve Python dependencies in an isolated virtual environment.
+FROM python:3.12-slim AS api-builder
+
+WORKDIR /build
+ENV DEBIAN_FRONTEND=noninteractive
+COPY --from=ghcr.io/astral-sh/uv:0.11.33 /uv /uvx /bin/
+COPY api/ ./
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && uv sync --no-install-project --no-dev
+
+# One runtime process serves both FastAPI and the compiled frontend.
+FROM python:3.12-slim AS runtime
+
+RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=denoland/deno:bin-2.9.5 /deno /usr/local/bin/deno
+RUN chmod +x /usr/local/bin/deno
+
+RUN groupadd -g 1000 appgroup && \
+    useradd -u 1000 -g appgroup -m appusr
+
+RUN chown -R appusr:appgroup /root
+
+USER appusr
+
+WORKDIR /app
+
+
+COPY --from=api-builder /build/.venv /app/.venv
+COPY --from=api-builder /build/src /app/app
+COPY --from=ui-builder /ui/dist /app/ui/dist
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/app/venv/bin:$PATH"
+    PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python \
+    ONTHESPOTDIR=/root/.config/onthespot \
+    ONTHESPOTCACHEDIR=/root/.config/onthespot/cache \
+    ONTHESPOT_WEBUI_DIST=/app/ui/dist \
+    PATH=/app/.venv/bin:$PATH
 
-SHELL ["/bin/bash", "-c"]
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ffmpeg \
-    libegl1 \
-    && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-FROM base AS builder
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN python3 -m venv venv
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install --no-cache-dir --prefer-binary -r requirements.txt
-
-COPY pyproject.toml setup.cfg ./
-COPY src ./src
-RUN pip install --no-cache-dir .
-
-# Cleanup: remove caches, tests, and strip shared objects
-RUN find /app/venv \
-    \( -type d -name "__pycache__" -o -type d -name "tests" -o -type d -name "test" \) \
-    -exec rm -rf {} + \
-    && find /app/venv -type f -name '*.pyc' -delete \
-    && find /app/venv/lib -type f -name '*.so' -exec strip --strip-unneeded {} + || true
+EXPOSE 6767 6768
 
 
-FROM base AS runtime
-
-COPY --from=builder /app/venv /app/venv
-
-EXPOSE 5000
-CMD ["onthespot-web", "--host", "0.0.0.0", "--port", "5000"]
+CMD ["/app/.venv/bin/python", "-m", "uvicorn", "onthespot.main:app", "--app-dir", "/app/app", "--host", "0.0.0.0", "--port", "6767"]

@@ -1,0 +1,35 @@
+services:
+  onthespot:
+    container_name: onthespot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    pull_policy: build
+    user: "1000:1000"
+    # One FastAPI process serves both the API and compiled React application.
+    ports:
+      - "${ONTHESPOT_WEB_PORT:-6767}:6767"
+    environment:
+      ONTHESPOTDIR: /root/.config/onthespot
+      ONTHESPOTCACHEDIR: /root/.config/onthespot/cache
+    volumes:
+      - "${ONTHESPOT_MUSIC_DIR:-./otsdata/Music}:/root/Music/OnTheSpot"
+      - "${ONTHESPOT_VIDEO_DIR:-./otsdata/Videos}:/root/Videos/OnTheSpot"
+      - "${ONTHESPOT_CONFIG_DIR:-./otsdata/Config}:/root/.config/onthespot"
+    restart: unless-stopped
+    stop_grace_period: 20s
+    networks:
+      - ots-network
+  
+  bgutil-ytdlp-pot-provider:
+    container_name: bgutil-provider
+    init: true
+    ports:
+      - "4416:4416"
+    image: brainicism/bgutil-ytdlp-pot-provider
+    networks:
+      - ots-network
+
+networks:
+  ots-network:
+    driver: bridge

@@ -1,79 +1,154 @@
-# Installation Options
+# Installation
 
-## 1. Install Through Prebuilt Releases (Recommended)
+OnTheSpot's production web build is a single application: one FastAPI process
+serves the API and the compiled React UI on port `6767`.
 
-This is the easiest way to get started.
+## Docker Compose (recommended)
 
-1. **Download the Latest Release**
+Requirements:
 
-   - Visit our [GitHub Releases Page](https://github.com/ots-downloader/onthespot/releases).
-   - Look for the latest version suitable for your operating system:
-     - **Windows Users**: Download the `.exe` file.
-     - **MacOS Users**: Download the `.dmg` file associated with your mac (x86_64 for intel, arm64 for apple silicone).
-     - **Linux Users**: Download the `.AppImage` or `tar.gz` file.
+- Docker Engine or Docker Desktop with Docker Compose v2
+- Enough free space for the selected media and config folders
 
-2. **Install OnTheSpot**
+Clone the repository and select this branch:
 
-   - **Windows**: Run the downloaded `.exe`.
-   - **MacOS**: Open the `.dmg`, follow the instructions listed in README.txt, and drag `OnTheSpot.app` into your `Applications` folder.
-   - **Linux**: Make the `.AppImage` executable and run it, alternatively extract the tar.gz and execute the binary.
-
-> [!TIP]
-> For MacOS, if you encounter security warnings, right-click the app and select "Open" from the context menu to bypass the gatekeeper.
-
-3. **Launch OnTheSpot**
-
-   - Open the application from your Downloads folder or Applications menu.
-
-![OTS_Download_1](../assets/gifs/download.gif)
-
-## 2. Build The App From Source
-
-If you prefer to build OnTheSpot yourself, follow these steps.
-
-1. **Install Python and Download the Source Code**
-
-   - Installing python can vary depending on your operating system.
-   - The source code can be downloaded through github or through the commands below:
-
-     ```bash
-     git clone https://github.com/ots-downloader/onthespot
-     cd onthespot
-     ```
-
-2. **Run the Build Script for Your Operating System**
-
-   - **Windows**: Open the `scripts` Folder. Double-click [`build_windows.bat`](scripts/build_windows.bat) or run it in Command Prompt.
-   - **MacOS**: Run [`build_mac.sh`](scripts/build_mac.sh) in Terminal with `./scripts/build_mac.sh`.
-   - **Linux**: Run [`build_linux.sh`](scripts/build_linux.sh) in Terminal with `./scripts/build_linux.sh`.
-   - **Linux AppImage**: Run [`build_appimage.sh`](scripts/build_appimage.sh) in Terminal with `./scripts/build_appimage.sh`.
-
-3. **Install and Launch OnTheSpot**
-
-   After building the application will be located in the `dist` folder. Be sure to follow installation steps based on your operating system.
-
-
-## 3. Install Via Pip or Run The App From Source
-You can install the app via pip, ensure you have ffmpeg, python, and git installed in your path. Run the commands below to setup the environment:
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+git clone --branch fastapi-dev --single-branch https://github.com/ots-downloader/onthespot.git
+cd onthespot
 ```
-Next you can download and run the app by installing via pip:
+
+Copy the example environment file, review the paths, then build and start:
+
+> [!WARNING] 
+> You will need to create at least the `otsdata` folder to avoid permission errors
+
 ```bash
-python3 -m pip install git+https://github.com/ots-downloader/onthespot --force
-
-onthespot-cli #cli
-onthespot-gui #gui
-onthespot-web #web ui
+cp .env.example .env
+docker compose up -d --build
+docker compose ps
 ```
-Alternatively you can run the app from source following the commands listed below:
+
+PowerShell uses `Copy-Item .env.example .env` instead of `cp`.
+
+Open `http://127.0.0.1:6767` on the Docker host, or
+`http://SERVER-IP:6767` from another device on the same private network. API
+documentation is available at `/docs` on the same address.
+
+Follow startup logs with:
+
 ```bash
-git clone https://github.com/ots-downloader/onthespot
-
-cd onthespot/src
-
-python3 -m onthespot.cli #cli
-python3 -m onthespot.__init__ #gui
-python3 -m onthespot.web #web ui
+docker compose logs -f onthespot
 ```
+
+Stop the container without deleting persisted data:
+
+```bash
+docker compose down
+```
+
+### Persistent folders
+
+The default `.env.example` stores data under `./otsdata`:
+
+> [!WARNING] 
+> You will need to create at least the `otsdata` folder to avoid permission errors
+
+| Variable | Container destination | Contents |
+| --- | --- | --- |
+| `ONTHESPOT_MUSIC_DIR` | `/root/Music/OnTheSpot` | downloaded audio |
+| `ONTHESPOT_VIDEO_DIR` | `/root/Videos/OnTheSpot` | downloaded video |
+| `ONTHESPOT_CONFIG_DIR` | `/root/.config/onthespot` | settings, accounts, cached sessions, playlist automation, statistics, and uploaded YouTube cookies |
+| `ONTHESPOT_WEB_PORT` | container port `6767` | host port used to open the application |
+
+Back up the configured host folders, especially `ONTHESPOT_CONFIG_DIR`. API
+credentials and account sessions are stored in that private folder, not in the
+Git repository or Docker image.
+
+## Unraid
+
+Use absolute Unraid paths in `.env`, for example:
+
+```dotenv
+ONTHESPOT_WEB_PORT=6769
+ONTHESPOT_MUSIC_DIR=/mnt/user/Music/OnTheSpot
+ONTHESPOT_VIDEO_DIR=/mnt/user/Videos/OnTheSpot
+ONTHESPOT_CONFIG_DIR=/mnt/user/appdata/onthespot
+```
+
+Then run `docker compose up -d --build` and open
+`http://UNRAID-IP:6769`. The default Compose deployment uses bridge networking
+and exposes only the web port.
+
+Spotify Connect discovery does not cross Docker bridge, VPN, or routed-network
+boundaries. To add a Spotify worker when Spotify is running on another
+computer, open **Accounts → Add account → Spotify → Remote access** and follow
+the generated companion instructions. The helper runs beside Spotify for the
+one-time pairing and removes itself when `--cleanup` is used.
+
+Playlist sorting uses Spotify OAuth, which is separate from the download
+worker login. Local installations can use the displayed `127.0.0.1` callback.
+A remotely opened installation needs a private HTTPS address or HTTPS reverse
+proxy; enter the exact callback shown by OnTheSpot in the Spotify Developer
+Dashboard. Do not make the whole application public merely to complete OAuth.
+
+## Run the production build from source
+
+Requirements:
+
+- Python 3.12
+- [uv](https://docs.astral.sh/uv/)
+- Node.js 22 with npm
+- FFmpeg available on `PATH`
+
+Build the UI and start the same single-process server used by Docker:
+
+```bash
+cd ui
+npm ci
+npm run build
+cd ..
+uv run --project api uvicorn onthespot.main:app --app-dir api/src --host 127.0.0.1 --port 6767
+```
+
+Open `http://127.0.0.1:6767`.
+
+On Windows, settings are stored under `%APPDATA%\onthespot` and media defaults
+to the current user's Music and Videos folders. On Linux, settings default to
+`~/.config/onthespot`.
+
+## Frontend development
+
+Run the backend command above, then start Vite in a second terminal:
+
+```bash
+cd ui
+npm ci
+npm run dev
+```
+
+The development UI opens on port `3000` and talks to the API on port `6767`.
+The production Docker image does not run Vite and does not require a separate
+frontend port.
+
+## Updating
+
+Preserve the configured volume folders, pull the branch, and rebuild:
+
+```bash
+git pull --ff-only
+docker compose up -d --build
+```
+
+The bundled application version replaces stale version values from older
+config volumes during startup.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Container is unhealthy | `docker compose logs onthespot`; confirm port 6767 is not already in use and the config folder is writable |
+| UI opens but requests fail | Use the same origin that served the page; do not configure a separate API URL for production |
+| Spotify worker is not visible | Use the generated companion when Spotify and Docker are not on the same LAN broadcast domain |
+| Playlist OAuth returns elsewhere | Save the exact callback currently shown in Playlist sorting and in the Spotify Developer Dashboard |
+| YouTube asks for sign-in | Upload a fresh Netscape-format `cookies.txt` through the YouTube Music account setup; browser-profile import only works when the browser runs on the API host |
+| Settings disappear after rebuild | Confirm `ONTHESPOT_CONFIG_DIR` is an existing persistent host path mounted at `/root/.config/onthespot` |
