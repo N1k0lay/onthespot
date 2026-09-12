@@ -41,6 +41,16 @@ YOUTUBE_URL_REGEX = re.compile(
     r"https?://(?:www\.)?(?:youtube\.com/(?:watch\?(?:[^#]*?&)?v=|shorts/|live/)|youtu\.be/)"
     r"(?P<video_id>[a-zA-Z0-9_-]+)"
 )
+YANDEX_MUSIC_URL_REGEX = re.compile(
+    r"https?://music\.yandex\.(?:ru|com|by|kz|uz)/"
+    r"(?:album/(?P<album_id>\d+)(?:/track/(?P<track_id>\d+))?"
+    r"|track/(?P<standalone_track_id>\d+)"
+    r"|artist/(?P<artist_id>\d+)"
+    r"|users/(?P<playlist_owner>[^/]+)/playlists/(?P<playlist_id>\d+)"
+    r"|playlists/(?P<playlist_uuid>[0-9a-f-]+))"
+    r"(?:[/?#].*)?$",
+    re.IGNORECASE,
+)
 
 # Video services
 CRUNCHYROLL_URL_REGEX = re.compile(

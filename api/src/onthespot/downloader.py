@@ -649,7 +649,7 @@ class DownloadWorker:
             )
             return default_format, bitrate, []
 
-        if service in ("bandcamp", "qobuz"):
+        if service in ("bandcamp", "qobuz", "yandex_music"):
             default_format, bitrate = download_http_stream(
                 item,
                 item_metadata,
@@ -798,4 +798,3 @@ class DownloadWorker:
             item["file_path"] = file_path + "." + output_format
         else:
             item["file_path"] = file_path + ".mp4"
-

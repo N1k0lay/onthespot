@@ -50,6 +50,10 @@ from .api.spotify import (
 )
 from .api.tidal import tidal_add_account_pt1, tidal_add_account_pt2
 from .api.youtube_music import youtube_music_add_account
+from .api.yandex_music import (
+    yandex_music_add_account_pt1,
+    yandex_music_add_account_pt2,
+)
 from .constants import ItemStatus
 from .downloader import DownloadWorker, RetryWorker
 from .export_locations import (
@@ -189,6 +193,35 @@ def add_tidal_account_worker(device_code):
         logger.info("Account Already Exists")
 
 
+def add_yandex_music_account():
+    client, code = yandex_music_add_account_pt1()
+    notification_hook(
+        "Continue Yandex Music login",
+        f"Enter code {code.user_code}",
+        code.verification_url,
+    )
+    login_worker = threading.Thread(
+        target=add_yandex_music_account_worker,
+        args=(client, code),
+        daemon=True,
+    )
+    login_worker.start()
+
+
+def add_yandex_music_account_worker(client, code):
+    try:
+        if not yandex_music_add_account_pt2(client, code):
+            notification_hook("Yandex Music login expired", "Start sign-in again.")
+            return
+        fillaccountpool.stop()
+        time.sleep(1)
+        relogin()
+        notification_hook("Yandex Music login complete", "Refresh Accounts.")
+    except Exception as exc:
+        logger.error("Yandex Music login failed: %s", exc)
+        notification_hook("Yandex Music login failed", str(exc))
+
+
 def search(search_term, search_filters: dict | None = None) -> None:
     """
     Parse the url and add the item to the pending queue.
@@ -222,6 +255,7 @@ _SEARCH_SERVICE_FILTER_KEYS = {
     "spotify": {"tracks", "albums", "playlists", "artists", "podcasts"},
     "tidal": {"tracks", "albums", "playlists", "artists"},
     "youtube_music": {"tracks"},
+    "yandex_music": {"tracks", "albums", "playlists", "artists"},
 }
 
 
@@ -1732,6 +1766,9 @@ async def add_account(service: str, item: AccountData | None = None):
         case "youtube":
             youtube_music_add_account()
             found = True
+        case "yandex_music":
+            add_yandex_music_account()
+            found = True
         case "bandcamp":
             bandcamp_add_account()
             found = True
@@ -1841,7 +1878,8 @@ async def get_accounts():
                 # A Spotify/Tidal account name is safe to display; service
                 # tokens are intentionally omitted.
                 "username": account.get("username", "")
-                if account.get("service") in {"spotify", "tidal", "qobuz"}
+                if account.get("service")
+                in {"spotify", "tidal", "qobuz", "yandex_music"}
                 else "",
             }
         )

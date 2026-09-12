@@ -42,6 +42,7 @@ const SERVICE_OPTIONS = [
   { value: 'spotify', label: 'Spotify', mode: 'device', requirement: 'Requires Spotify Premium. Start sign-in, then open Spotify’s Connect to a device menu and select OnTheSpot.' },
   { value: 'tidal', label: 'Tidal', mode: 'device', requirement: 'Starts a Tidal device-link sign-in in your browser.' },
   { value: 'youtube', label: 'YouTube Music', mode: 'youtube', requirement: 'Configure an explicit local YouTube session for videos that require sign-in or add public account' },
+  { value: 'yandex_music', label: 'Yandex Music', mode: 'device', requirement: 'Starts a Yandex device sign-in. Open the notification link and enter the displayed code.' },
 ] as const satisfies ReadonlyArray<{ value: string; label: string; mode: CredentialMode; requirement: string; tokenLabel?: string; tokenRequired?: boolean }>;
 
 const getServicePresentation = (service: string): ServicePresentation => {
@@ -54,6 +55,7 @@ const getServicePresentation = (service: string): ServicePresentation => {
     case 'bandcamp': return { label: 'Bandcamp', accountType: 'Public', maxBitrate: 'Source', Icon: Disc3, iconClass: 'text-sky-400' };
     case 'youtube_music':
     case 'youtube': return { label: 'YouTube Music', accountType: 'Public', maxBitrate: '256k', Icon: CirclePlay, iconClass: 'text-red-400' };
+    case 'yandex_music': return { label: 'Yandex Music', accountType: 'Premium', maxBitrate: '320k', Icon: Music2, iconClass: 'text-yellow-400' };
     case 'deezer': return { label: 'Deezer', accountType: 'Premium', maxBitrate: '1411k', Icon: Heart, iconClass: 'text-violet-400' };
     case 'qobuz': return { label: 'Qobuz', accountType: 'Premium', maxBitrate: '1411k', Icon: Headphones, iconClass: 'text-sky-300' };
     case 'crunchyroll': return { label: 'Crunchyroll', accountType: 'Premium', maxBitrate: 'Video', Icon: Film, iconClass: 'text-amber-400' };
@@ -236,7 +238,9 @@ export const AccountsManager: React.FC<AccountsManagerProps> = ({
     setLoading(false);
     if (res) {
       if (selectedService.mode === 'device') {
-        setSignInStarted('Spotify Connect is waiting. In the Spotify app, open Connect to a device and select OnTheSpot, then refresh Accounts.');
+        setSignInStarted(selectedService.value === 'spotify'
+          ? 'Spotify Connect is waiting. In the Spotify app, open Connect to a device and select OnTheSpot, then refresh Accounts.'
+          : `${selectedService.label} sign-in started. Open the authorization link in Notifications, enter the code, then refresh Accounts.`);
         return;
       }
       setShowModal(false);

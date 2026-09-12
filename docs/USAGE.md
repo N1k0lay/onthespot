@@ -37,6 +37,7 @@ form changes to show the fields required by the selected service.
 | Spotify | Spotify Connect sign-in and Dev API Keys | Requires Spotify Premium and WebAPI Dev Keys. |
 | Tidal | Device-link sign-in | Follow the link shown by OnTheSpot. |
 | YouTube Music | Optional cookies | Public videos works without cookies. Sign-in or private videos require a Netscape-format `cookies.txt` file. |
+| Yandex Music | Device-link sign-in | A Yandex Music subscription is required for full-quality downloads. |
 
 Only use accounts and session data you are authorized to use. 
 

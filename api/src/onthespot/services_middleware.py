@@ -25,6 +25,7 @@ from .api.deezer import (
 from .api.qobuz import qobuz_get_file_url
 from .api.tidal import tidal_get_mpd_data
 from .api.spotify import reinit_spotify_session
+from .api.yandex_music import yandex_music_get_file_url
 
 
 from .accounts import get_account_token
@@ -374,7 +375,13 @@ def download_via_ytdlp_audio(
 def download_http_stream(
     item, item_metadata, service, item_id, token, temp_path
 ):
-    """Download a direct HTTP stream (Bandcamp, Qobuz)."""
+    """Download a direct HTTP stream (Bandcamp, Qobuz, Yandex Music)."""
+    if service == "yandex_music":
+        file_url, codec, source_bitrate = yandex_music_get_file_url(
+            token, item_id, int(item.get("profile_bitrate", 320))
+        )
+        _download_http_with_resume(item, file_url, temp_path)
+        return f".{codec}", f"{source_bitrate}k"
     if service == "qobuz":
         default_format = ".flac"
         bitrate = "1411k"

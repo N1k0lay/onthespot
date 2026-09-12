@@ -10,6 +10,7 @@ export const CATALOG_SERVICE_LABELS: Record<string, string> = {
   spotify: "Spotify",
   tidal: "Tidal",
   youtube_music: "YouTube Music",
+  yandex_music: "Yandex Music",
 };
 
 export const getCatalogServiceLabel = (service: string): string =>

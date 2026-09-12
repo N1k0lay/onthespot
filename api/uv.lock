@@ -749,7 +749,7 @@ wheels = [
 
 [[package]]
 name = "onthespot"
-version = "2.0.0a2"
+version = "2.0.1b1"
 source = { virtual = "." }
 dependencies = [
     { name = "bgutil-ytdlp-pot-provider" },
@@ -764,6 +764,7 @@ dependencies = [
     { name = "pywidevine" },
     { name = "requests" },
     { name = "urllib3" },
+    { name = "yandex-music" },
     { name = "yt-dlp", extra = ["default"] },
 ]
 
@@ -781,6 +782,7 @@ requires-dist = [
     { name = "pywidevine", specifier = ">=1.8.0" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "urllib3", specifier = ">=2.2.3" },
+    { name = "yandex-music", specifier = ">=3.0.0,<4" },
     { name = "yt-dlp", extras = ["default"], specifier = ">=2026.8.19" },
 ]
 
@@ -1093,6 +1095,15 @@ wheels = [
 ]
 
 [[package]]
+name = "pysocks"
+version = "1.7.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/11/293dd436aea955d45fc4e8a35b6ae7270f5b8e00b53cf6c024c83b657a11/PySocks-1.7.1.tar.gz", hash = "sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0", size = 284429, upload-time = "2019-09-20T02:07:35.714Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/8d/59/b4572118e098ac8e46e399a1dd0f2d85403ce8bbaad9ec79373ed6badaf9/PySocks-1.7.1-py3-none-any.whl", hash = "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5", size = 16725, upload-time = "2019-09-20T02:06:22.938Z" },
+]
+
+[[package]]
 name = "python-dotenv"
 version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1187,6 +1198,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/ac/c3/e2a2b89f2d3e2179abd6d00ebd70bff6273f37fb3e0cc209f48b39d00cbf/requests-2.34.2.tar.gz", hash = "sha256:f288924cae4e29463698d6d60bc6a4da69c89185ad1e0bcc4104f584e960b9ed", size = 142856, upload-time = "2026-05-14T19:25:27.735Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/f4/c67b0b3f1b9245e8d266f0f112c500d50e5b4e83cb6f3b71b6528104182a/requests-2.34.2-py3-none-any.whl", hash = "sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0", size = 73075, upload-time = "2026-05-14T19:25:26.443Z" },
+]
+
+[package.optional-dependencies]
+socks = [
+    { name = "pysocks" },
 ]
 
 [[package]]
@@ -1599,6 +1615,16 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d3/de/37edf1260ff0fbbd2f82433489c4cfbe799ac2ff21355331609879329fe6/websockets-16.1-cp314-cp314t-win_amd64.whl", hash = "sha256:2c0e0857c30bbbc2bb5c30687508f0b7ec19aa026cd9f2ff8424d0fee42dcc07", size = 180291, upload-time = "2026-07-10T06:32:47.119Z" },
     { url = "https://files.pythonhosted.org/packages/66/58/bd83247f39ddc26ffc2c24eb05087a3b749e00cb4509fc6d19daa23c8495/websockets-16.1-py3-none-any.whl", hash = "sha256:c5149dfe490ec7e5ee5dbf624c642fb725f93a5575c7f00ab594ca9eddb8dd81", size = 174031, upload-time = "2026-07-10T06:32:56.079Z" },
 ]
+
+[[package]]
+name = "yandex-music"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests", extra = ["socks"] },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ce/e0/3b264e5d8442d57c2668fe6b98eb3b4be6ea489a74d1faea190c964e54db/yandex_music-3.0.0.tar.gz", hash = "sha256:a0fbb5c838726f2806af547a48e9dba315d2779b9273d5da8b4ef1749cac3320", size = 261855, upload-time = "2026-04-18T17:06:49.649Z" }
 
 [[package]]
 name = "yt-dlp"

@@ -28,6 +28,7 @@ from .resources.regexes import (
     TIDAL_URL_REGEX,
     YOUTUBE_URL_REGEX,
     YOUTUBE_MUSIC_URL_REGEX,
+    YANDEX_MUSIC_URL_REGEX,
     CRUNCHYROLL_URL_REGEX,
 )
 
@@ -83,6 +84,7 @@ class UrlMatcher:
             or self._try_tidal(url)
             or self._try_youtube(url)
             or self._try_youtube_music(url)
+            or self._try_yandex_music(url)
             or self._try_crunchyroll(url)
         )
         return result
@@ -183,6 +185,34 @@ class UrlMatcher:
         if not match:
             return None
         return ("youtube_music", "track", match.group("video_id"))
+
+    def _try_yandex_music(self, url):
+        match = YANDEX_MUSIC_URL_REGEX.search(url)
+        if not match:
+            return None
+        track_id = match.group("track_id") or match.group("standalone_track_id")
+        if track_id:
+            album_id = match.group("album_id")
+            return (
+                "yandex_music",
+                "track",
+                f"{track_id}:{album_id}" if album_id else track_id,
+            )
+        if match.group("album_id"):
+            return ("yandex_music", "album", match.group("album_id"))
+        if match.group("artist_id"):
+            return ("yandex_music", "artist", match.group("artist_id"))
+        if match.group("playlist_uuid"):
+            return (
+                "yandex_music",
+                "playlist",
+                f"uuid:{match.group('playlist_uuid')}",
+            )
+        return (
+            "yandex_music",
+            "playlist",
+            f"{match.group('playlist_owner')}:{match.group('playlist_id')}",
+        )
 
     def _try_crunchyroll(self, url):
         match = CRUNCHYROLL_URL_REGEX.search(url)

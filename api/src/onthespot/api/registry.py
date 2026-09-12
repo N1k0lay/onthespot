@@ -33,6 +33,7 @@ from .soundcloud import soundcloud_login_user
 from .spotify import spotify_login_user
 from .tidal import tidal_login_user
 from .youtube_music import youtube_music_login_user
+from .yandex_music import yandex_music_login_user
 
 SERVICE_LOGIN_FUNCTIONS = {
     "apple_music": apple_music_login_user,
@@ -45,6 +46,7 @@ SERVICE_LOGIN_FUNCTIONS = {
     "spotify": spotify_login_user,
     "tidal": tidal_login_user,
     "youtube_music": youtube_music_login_user,
+    "yandex_music": yandex_music_login_user,
 }
 
 # ---------------------------------------------------------------------------
@@ -58,6 +60,7 @@ from .qobuz import qobuz_get_token
 from .soundcloud import soundcloud_get_token
 from .spotify import spotify_get_token
 from .tidal import tidal_get_token
+from .yandex_music import yandex_music_get_token
 
 SERVICE_TOKEN_FUNCTIONS = {
     "apple_music": apple_music_get_token,
@@ -67,6 +70,7 @@ SERVICE_TOKEN_FUNCTIONS = {
     "soundcloud": soundcloud_get_token,
     "spotify": spotify_get_token,
     "tidal": tidal_get_token,
+    "yandex_music": yandex_music_get_token,
 }
 
 # ---------------------------------------------------------------------------
@@ -82,6 +86,7 @@ from .soundcloud import soundcloud_get_track_metadata
 from .spotify import spotify_get_track_metadata, spotify_get_podcast_episode_metadata
 from .tidal import tidal_get_track_metadata
 from .youtube_music import youtube_music_get_track_metadata
+from .yandex_music import yandex_music_get_track_metadata
 
 SERVICE_METADATA_FUNCTIONS = {
     "apple_music": {"track": apple_music_get_track_metadata},
@@ -97,6 +102,7 @@ SERVICE_METADATA_FUNCTIONS = {
     },
     "tidal": {"track": tidal_get_track_metadata},
     "youtube_music": {"track": youtube_music_get_track_metadata},
+    "yandex_music": {"track": yandex_music_get_track_metadata},
 }
 
 
@@ -133,6 +139,7 @@ from .soundcloud import soundcloud_get_search_results
 from .spotify import spotify_get_search_results
 from .tidal import tidal_get_search_results
 from .youtube_music import youtube_music_get_search_results
+from .yandex_music import yandex_music_get_search_results
 
 SERVICE_SEARCH_FUNCTIONS = {
     "apple_music": apple_music_get_search_results,
@@ -144,6 +151,7 @@ SERVICE_SEARCH_FUNCTIONS = {
     "spotify": spotify_get_search_results,
     "tidal": tidal_get_search_results,
     "youtube_music": youtube_music_get_search_results,
+    "yandex_music": yandex_music_get_search_results,
 }
 
 # ---------------------------------------------------------------------------
@@ -188,6 +196,11 @@ from .youtube_music import (
     youtube_music_get_channel_track_ids,
     youtube_music_get_playlist_data,
 )
+from .yandex_music import (
+    yandex_music_get_album_track_ids,
+    yandex_music_get_artist_album_ids,
+    yandex_music_get_playlist_data,
+)
 
 # Maps service → album_type → function(token, collection_id) → list[track_id]
 SERVICE_ALBUM_TRACK_ID_FUNCTIONS = {
@@ -198,6 +211,7 @@ SERVICE_ALBUM_TRACK_ID_FUNCTIONS = {
     "soundcloud": soundcloud_get_album_track_ids,
     "spotify": spotify_get_album_track_ids,
     "tidal": tidal_get_album_track_ids,
+    "yandex_music": yandex_music_get_album_track_ids,
 }
 
 # Maps service → function(token, artist_id) → list[album_id]
@@ -209,6 +223,7 @@ SERVICE_ARTIST_ALBUM_ID_FUNCTIONS = {
     "soundcloud": soundcloud_get_artist_album_ids,
     "spotify": spotify_get_artist_album_ids,
     "tidal": tidal_get_artist_album_ids,
+    "yandex_music": yandex_music_get_artist_album_ids,
 }
 
 # Maps service → function(token, label_id) → list[album_id]
@@ -225,6 +240,7 @@ SERVICE_PLAYLIST_DATA_FUNCTIONS = {
     "spotify": spotify_get_playlist_data,
     "tidal": tidal_get_playlist_data,
     "youtube_music": youtube_music_get_playlist_data,
+    "yandex_music": yandex_music_get_playlist_data,
 }
 
 # Maps service → function(token, mix_id) → (name, by, list[track_id])
